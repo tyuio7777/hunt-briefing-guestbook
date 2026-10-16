@@ -13,6 +13,19 @@
       "locked": false,
       "node_id": "I_kwDOVLzLjM8AAAABXvmuBw",
       "body_edited_at": "2026-10-16T17:34:44Z"
+    },
+    "2": {
+      "number": 2,
+      "user": {
+        "id": 20161415
+      },
+      "body": "{\"schema_version\":\"1.0\",\"kind\":\"hunt-briefing-guestbook\",\"submission_id\":\"9764cc792b664af4a6875e8722499631\",\"nickname\":\"CROISSANT\",\"profile_id\":\"admin_crowned_computer\",\"body\":\"\\uBB34\\uB824 \\uBE0C\\uB9AC\\uD551 \\uB9C1\\uD06C \\uCCA8\\uBD80\\uB3C4 \\uB41C\\uB2E4\\uAD7F!\",\"briefing_id\":\"2026-10-12\"}",
+      "created_at": "2026-10-16T17:57:56Z",
+      "updated_at": "2026-10-16T17:57:56Z",
+      "state": "open",
+      "locked": false,
+      "node_id": "I_kwDOVLzLjM8AAAABXwBddA",
+      "body_edited_at": null
     }
   }
 }

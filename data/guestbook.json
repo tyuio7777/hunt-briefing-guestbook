@@ -1,7 +1,27 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-10-16T17:34:55Z",
+  "generated_at": "2026-10-16T17:58:44Z",
   "entries": [
+    {
+      "issue_number": 2,
+      "author_id": 20161415,
+      "author_code": "#0C04NB",
+      "nickname": "CROISSANT",
+      "profile_id": "admin_crowned_computer",
+      "body": "무려 브리핑 링크 첨부도 된다굿!",
+      "submission_id": "9764cc792b664af4a6875e8722499631",
+      "created_at": "2026-10-16T17:57:56Z",
+      "updated_at": "2026-10-16T17:57:56Z",
+      "edited_at": null,
+      "body_revision": "ca891354ded7c5c0b52ecf6132312f0ad52fffa41e8e4c2d9c73354ec83d70b2",
+      "first_published_at": "2026-10-16T17:58:44Z",
+      "briefing_reference": {
+        "issue_id": "2026-10-12",
+        "title": "공식 4건 · 커뮤니티 7건",
+        "html_url": "https://raw.githubusercontent.com/tyuio7777/hunt-briefing-feed/main/feed/2026/10/2026-10-12.html",
+        "published_at": "2026-10-12T00:00:00Z"
+      }
+    },
     {
       "issue_number": 1,
       "author_id": 20161415,
@@ -19,6 +39,13 @@
     }
   ],
   "receipts": [
+    {
+      "issue_number": 2,
+      "author_id": 20161415,
+      "submission_id": "9764cc792b664af4a6875e8722499631",
+      "status": "published",
+      "reason": ""
+    },
     {
       "issue_number": 1,
       "author_id": 20161415,
