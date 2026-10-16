@@ -189,7 +189,9 @@ def build_snapshot(issues, policy, profiles, state, now, catalog=None):
                 history[str(number)] = previous
                 entries.append({'issue_number': number, 'author_id': uid, 'author_code': author_code(uid),
                                 'nickname': data['nickname'], 'profile_id': data['profile_id'], 'body': data['body'],
-                                'submission_id': data['submission_id'], 'created_at': iso(created), 'updated_at': iso(updated),
+                                'submission_id': data['submission_id'], 'created_at': iso(created),
+                                'updated_at': issue.get('body_edited_at') or iso(created),
+                                'edited_at': issue.get('body_edited_at'), 'body_revision': hashlib.sha256(issue['body'].encode('utf-8')).hexdigest(),
                                 'first_published_at': previous['first_published_at'], 'briefing_reference': reference})
                 receipt.update(status='published', reason='')
             days[day_key] = days.get(day_key, 0) + 1
@@ -258,7 +260,10 @@ def compact_issue(item):
         except (ValueError, TypeError):
             body = '{}'
     return {'number': number, 'user': {'id': uid}, 'body': body, 'created_at': item['created_at'],
-            'updated_at': item['updated_at'], 'state': item['state']}
+            'updated_at': item['updated_at'], 'state': item['state'], 'locked': bool(item.get('locked', False)),
+            **({'node_id': item['node_id']} if item.get('node_id') else {}),
+            **({'body_edited_at': item['body_edited_at']} if 'body_edited_at' in item else {}),
+            **({'body_truncated': True} if body != (item.get('body') or '') or item.get('body_truncated') else {})}
 
 def load_issue_cache(root):
     result = {}
@@ -362,8 +367,13 @@ def main():
     event = {}
     if os.environ.get('GITHUB_EVENT_PATH'):
         event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text(encoding='utf-8'))
+    import guestbook_comments as comments
+    cached_before = load_issue_cache(root)
+    migration = any('node_id' not in x for x in cached_before.values())
     records, sync, full = reconcile_issues(root, os.environ['GITHUB_REPOSITORY'], os.environ['GH_TOKEN'], now,
-        force_full=event.get('action') in ('deleted', 'transferred') or os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch')
+        force_full=migration or (event.get('action') in ('deleted', 'transferred') and not event.get('comment')) or os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch')
+    comments.enrich_edits(records, cached_before, os.environ['GH_TOKEN'])
+    comment_rows, comment_sync = comments.reconcile(root, os.environ['GITHUB_REPOSITORY'], os.environ['GH_TOKEN'], now, full, event)
     issues = list(records.values())
     # A network failure aborts before writing: never reject good attachments because a feed is temporarily unavailable.
     catalog = load_briefing_catalog() if needs_briefing_catalog(issues) else {}
@@ -372,6 +382,8 @@ def main():
     old = json.loads(target.read_text(encoding='utf-8')) if target.exists() else {}
     if old.get('entries') == feed['entries'] and old.get('receipts') == feed['receipts']:
         feed['generated_at'] = old.get('generated_at', feed['generated_at'])
+    comment_index, comment_blobs = comments.build(feed, comment_rows, records, policy, profiles, now)
+    comments.save(root, comment_rows, comment_sync, comment_index, comment_blobs)
     publish_version(root, feed)
     write_json(state_path, new_state)
     save_issue_cache(root, records, sync)

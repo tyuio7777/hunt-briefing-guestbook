@@ -68,3 +68,24 @@ Device Flow 활성화, Issues 읽기/쓰기와 Metadata 읽기 권한으로 등�
 - Git 이력은 재작성하지 않습니다. 사용자 글과 최소 게시 이력은 계속 쌓이므로 무제한 운영을 보장하지 않으며, 경고가 나오면 저장소 분할 또는 별도 보관 절차를 검토합니다.
 
 검증: `python3 -m unittest discover -s tests -v`
+
+## v47 댓글과 실제 수정 시각
+
+- 앱 방명록 카드의 본문/댓글 아이콘은 같은 상세 화면을 엽니다. 원글 전체, 댓글, 작성란 순서입니다.
+- 원본 댓글은 해당 Issue의 Comments입니다. 다른 글로 이동하거나 공통 브리핑 ID로 합치지 않습니다.
+- 앱 댓글의 구조는 `schema_version`, `kind: hunt-briefing-comment`, `submission_id`(32자리 UUID), `nickname`, `profile_id`, `body`입니다. 숫자 작성자 ID는 GitHub 응답에서만 가져옵니다.
+- 별명은 2~16자, 댓글은 앞뒤 공백 제거 후 1~500 Unicode 문자입니다. 일반 GitHub 문장·봇·잘못된 형식·허용되지 않은 관리자 프로필은 앱 댓글 수에 포함하지 않습니다.
+- 댓글에는 원글의 하루 3개 등록 제한을 적용하지 않습니다. 같은 원글·작성자·submission_id를 중복 게시하지 않습니다. GitHub 자체 API/스팸 제한은 그대로입니다.
+- 이용자는 본인 댓글을 수정하거나 삭제할 수 있습니다. 앱에서 삭제 확인을 받고 작성자 및 현재 본문 개정 값을 재검사합니다. 원글 작성자는 다른 사람 댓글의 수정/삭제 권한을 받지 않습니다.
+- `issue_comment`의 created/edited/deleted 이벤트를 추가했습니다. PR 댓글 이벤트는 실행하지 않습니다. 변경 댓글 증분 조회와 해당 원글의 전체 댓글 재대조를 병행하며, 삭제 후보는 개별 조회 후 제거합니다. 주 1회 전체 대조로 누락 이벤트도 복구합니다.
+- 공개 목록은 기존 최근 500개 원글에 연결된 댓글입니다. 오래된 글이 앱 목록에서 빠져도 원본 댓글을 삭제하지 않습니다.
+- `data/comments-version.json` → `data/comments/snapshots/{해시}.json` → `data/comments/blobs/{해시}.json` 순서로 인덱스·글별 목록·50개 단위 페이지를 읽습니다. 크기·SHA-256이 일치한 데이터만 표시합니다. `data/comments-index.json`은 운영 확인용 현재 인덱스입니다.
+- 인덱스는 최신 8개 스냅샷과 이들이 참조하는 파일만 유지합니다. 이전 버전의 참조가 모두 없어지면 해당 파일을 정리합니다. API 재조회용 캐시는 `state/comments/{Issue번호}.json`, 동기화 지점은 `state/comments-sync.json`입니다.
+- 게시 데이터가 같으면 공개 버전을 갱신하지 않습니다. 생성 용량 경고에는 댓글 파일도 포함됩니다. Git 이력과 GitHub 원본은 자동 삭제/재작성하지 않습니다.
+- 댓글 숨김: `config/moderation.json`에 `hidden_comment_ids` 숫자 배열을 추가하세요. 예: `"hidden_comment_ids": [1234567890]`. 기존 정책 항목과 다른 ID는 보존하세요. `blocked_author_ids`는 원글과 댓글에 함께 적용됩니다.
+- 닫힘/숨김/비공개 원글의 댓글은 앱에서 게시하거나 새로 작성하지 않습니다. 잠긴 원글의 공개 댓글은 읽을 수 있지만 등록·수정은 막습니다. 이 정책은 GitHub 웹의 권한을 바꾸지 않습니다. GitHub 웹에서도 작성 차단이 필요하면 운영자가 Lock conversation을 사용합니다.
+- 원글과 댓글의 `edited_at`은 GraphQL `lastEditedAt`으로 확인합니다. 원글의 `updated_at`도 실제 본문 편집 시각(편집 전에는 생성 시각)으로 게시합니다. 댓글 추가로 Issue.updated_at이 바뀌어도 원글이 편집된 것처럼 표시하지 않습니다. `body_revision`은 실제 GitHub JSON 본문의 SHA-256으로 편집 충돌 검사에 사용합니다.
+- 앱의 댓글 전송 전 처리 기록은 계정·원글별로 보관합니다. 연결이 끊기면 먼저 해당 작성자와 submission_id/개정 값을 조회하며, 자동 재전송하지 않습니다. GitHub API 자체의 exactly-once를 보장하는 기능은 아닙니다.
+- 기존 GitHub App·Device Flow·Issues 읽기/쓰기와 Actions 권한을 재사용합니다. 새 비밀키, 사용자 collaborator 권한, 관리 서버, 유료 서비스는 추가하지 않았습니다. 기존 공지·브리핑·알림·동향 수집과 예약은 변경하지 않습니다.
+
+검증 명령은 위와 동일합니다. 실제 이용자 토큰/Android 기기에서의 조작 검증은 별도로 필요하며, 배포 확인을 위해 운영 방명록에 테스트 댓글을 쓰지 않았습니다.

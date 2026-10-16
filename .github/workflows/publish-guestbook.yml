@@ -2,6 +2,8 @@ name: Publish guestbook
 on:
   issues:
     types: [opened, edited, closed, reopened, deleted, transferred]
+  issue_comment:
+    types: [created, edited, deleted]
   push:
     branches: [main]
     paths:
@@ -18,7 +20,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   publish:
-    if: github.repository == 'tyuio7777/hunt-briefing-guestbook'
+    if: github.repository == 'tyuio7777/hunt-briefing-guestbook' && !github.event.issue.pull_request
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -42,7 +44,7 @@ jobs:
           for attempt in 1 2 3; do
             git fetch origin main
             git reset --hard origin/main
-            git clean -fd -- data/snapshots state
+            git clean -fd -- data/snapshots data/comments state
             python3 tools/publish_guestbook.py
             python3 tools/check_storage.py
             git add -A -- data state
