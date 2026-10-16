@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-10-16T17:26:23Z",
+  "entries": [
+    {
+      "issue_number": 1,
+      "author_id": 20161415,
+      "author_code": "#0C04NB",
+      "nickname": "CROISSANT",
+      "profile_id": "admin_crowned_computer",
+      "body": "방명록 생성 ㅊㅊ",
+      "submission_id": "236cf97bec464d719e649d6a04dbc7a5",
+      "created_at": "2026-10-16T17:26:14Z",
+      "updated_at": "2026-10-16T17:26:14Z",
+      "edited_at": null,
+      "body_revision": "87f5d25d81bd86b1e15ce7910f14ee4d9bce54e60e7615d2fd665695bf765efc",
+      "first_published_at": "2026-10-16T17:26:23Z",
+      "briefing_reference": null
+    }
+  ],
+  "receipts": [
+    {
+      "issue_number": 1,
+      "author_id": 20161415,
+      "submission_id": "236cf97bec464d719e649d6a04dbc7a5",
+      "status": "published",
+      "reason": ""
+    }
+  ]
+}

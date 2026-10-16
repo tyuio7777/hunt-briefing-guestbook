@@ -1,4 +1,12 @@
 {
   "schema_version": "1.0",
-  "history": {}
+  "history": {
+    "1": {
+      "author_id": 20161415,
+      "submission_id": "236cf97bec464d719e649d6a04dbc7a5",
+      "first_published_at": "2026-10-16T17:26:23Z",
+      "created_at": "2026-10-16T17:26:14Z",
+      "briefing_reference": null
+    }
+  }
 }

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "issues": {
+    "1": {
+      "number": 1,
+      "user": {
+        "id": 20161415
+      },
+      "body": "{\"schema_version\":\"1.0\",\"kind\":\"hunt-briefing-guestbook\",\"submission_id\":\"236cf97bec464d719e649d6a04dbc7a5\",\"nickname\":\"CROISSANT\",\"profile_id\":\"admin_crowned_computer\",\"body\":\"\\uBC29\\uBA85\\uB85D \\uC0DD\\uC131 \\u314A\\u314A\",\"briefing_id\":null}",
+      "created_at": "2026-10-16T17:26:14Z",
+      "updated_at": "2026-10-16T17:26:14Z",
+      "state": "open",
+      "locked": false,
+      "node_id": "I_kwDOVLzLjM8AAAABXvmuBw",
+      "body_edited_at": null
+    }
+  }
+}
