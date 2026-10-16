@@ -20,9 +20,9 @@ Issues를 새로 쓰거나 수정·닫기·삭제하면 전체 목록을 검증�
 
 등록된 GitHub App은 `hunt-briefing-guestbook-tyuio7777`입니다.
 Device Flow 활성화, Issues 읽기/쓰기와 Metadata 읽기 권한으로 등록했습니다.
-이 저장소 하나에만 설치한 뒤 기존 feed 저장소의 `community/config.json`에서 `enabled`를 켭니다.
+2026-10-16에 이 저장소 하나에만 설치된 것을 확인하고 기존 feed 저장소의 `community/config.json`에서 `enabled`를 켰습니다.
 공개 Client ID `Iv23li46XpZtN0HuHc1x`와 저장소 ID `1421659020`은 이미 입력했습니다.
-현재는 설치 확인 전이므로 계정 연동이 비활성 상태입니다.
+계정 연동이 활성화되어 있습니다. 앱에서 각 이용자가 자신의 GitHub 계정으로 승인하면 글을 작성·수정할 수 있습니다.
 앱에 운영자 토큰이나 Client Secret을 넣지 않습니다.
 일반 이용자에게 이 저장소의 collaborator 권한을 부여하지 않습니다.
 
