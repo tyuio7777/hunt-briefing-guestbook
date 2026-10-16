@@ -1,0 +1,160 @@
+{
+  "schema_version": "1.0",
+  "profiles": [
+    {
+      "id": "rabbit",
+      "name": "토끼",
+      "admin_only": false
+    },
+    {
+      "id": "hedgehog",
+      "name": "고슴도치",
+      "admin_only": false
+    },
+    {
+      "id": "hamster",
+      "name": "햄스터",
+      "admin_only": false
+    },
+    {
+      "id": "capybara",
+      "name": "카피바라",
+      "admin_only": false
+    },
+    {
+      "id": "otter",
+      "name": "수달",
+      "admin_only": false
+    },
+    {
+      "id": "fox",
+      "name": "여우",
+      "admin_only": false
+    },
+    {
+      "id": "raccoon",
+      "name": "라쿤",
+      "admin_only": false
+    },
+    {
+      "id": "panda",
+      "name": "판다",
+      "admin_only": false
+    },
+    {
+      "id": "owl",
+      "name": "올빼미",
+      "admin_only": false
+    },
+    {
+      "id": "penguin",
+      "name": "펭귄",
+      "admin_only": false
+    },
+    {
+      "id": "duck",
+      "name": "오리",
+      "admin_only": false
+    },
+    {
+      "id": "turtle",
+      "name": "거북이",
+      "admin_only": false
+    },
+    {
+      "id": "handheld_game",
+      "name": "휴대용 게임기",
+      "admin_only": false
+    },
+    {
+      "id": "camera",
+      "name": "카메라",
+      "admin_only": false
+    },
+    {
+      "id": "headphones",
+      "name": "헤드폰",
+      "admin_only": false
+    },
+    {
+      "id": "backpack",
+      "name": "배낭",
+      "admin_only": false
+    },
+    {
+      "id": "umbrella",
+      "name": "우산",
+      "admin_only": false
+    },
+    {
+      "id": "bicycle",
+      "name": "자전거",
+      "admin_only": false
+    },
+    {
+      "id": "alarm_clock",
+      "name": "알람시계",
+      "admin_only": false
+    },
+    {
+      "id": "book",
+      "name": "책",
+      "admin_only": false
+    },
+    {
+      "id": "croissant",
+      "name": "크루아상",
+      "admin_only": false
+    },
+    {
+      "id": "strawberry_cake",
+      "name": "딸기 케이크",
+      "admin_only": false
+    },
+    {
+      "id": "pancakes",
+      "name": "팬케이크",
+      "admin_only": false
+    },
+    {
+      "id": "peach",
+      "name": "복숭아",
+      "admin_only": false
+    },
+    {
+      "id": "pudding",
+      "name": "푸딩",
+      "admin_only": false
+    },
+    {
+      "id": "sunflower",
+      "name": "해바라기",
+      "admin_only": false
+    },
+    {
+      "id": "cactus",
+      "name": "선인장",
+      "admin_only": false
+    },
+    {
+      "id": "cherry_blossom",
+      "name": "벚꽃",
+      "admin_only": false
+    },
+    {
+      "id": "mushroom",
+      "name": "버섯",
+      "admin_only": false
+    },
+    {
+      "id": "maple_leaf",
+      "name": "단풍잎",
+      "admin_only": false
+    },
+    {
+      "id": "admin_crowned_computer",
+      "name": "관리자 전용 컴퓨터",
+      "admin_only": true
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+name: Publish guestbook
+on:
+  issues:
+    types: [opened, edited, closed, reopened, deleted, transferred]
+  push:
+    branches: [main]
+    paths:
+      - 'config/**'
+      - 'tools/publish_guestbook.py'
+      - '.github/workflows/publish-guestbook.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+permissions: {}
+concurrency:
+  group: guestbook-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'tyuio7777/hunt-briefing-guestbook'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      issues: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+          fetch-depth: 1
+      - name: Validate all Issues and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            python3 tools/publish_guestbook.py
+            git add -- data/guestbook.json data/publication-state.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m 'chore: publish validated guestbook snapshot'
+            if git push origin HEAD:main; then exit 0; fi
+          done
+          echo 'Repository changed during publication; run this workflow again.' >&2
+          exit 1
