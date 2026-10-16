@@ -6,7 +6,8 @@ on:
     branches: [main]
     paths:
       - 'config/**'
-      - 'tools/publish_guestbook.py'
+      - 'tools/**'
+      - 'tests/**'
       - '.github/workflows/publish-guestbook.yml'
   workflow_dispatch:
   schedule:
@@ -19,7 +20,7 @@ jobs:
   publish:
     if: github.repository == 'tyuio7777/hunt-briefing-guestbook'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     permissions:
       contents: write
       issues: read
@@ -28,7 +29,9 @@ jobs:
         with:
           ref: main
           fetch-depth: 1
-      - name: Validate all Issues and publish
+      - name: Test publisher
+        run: python3 -m unittest discover -s tests -v
+      - name: Reconcile changed Issues and publish
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -39,8 +42,10 @@ jobs:
           for attempt in 1 2 3; do
             git fetch origin main
             git reset --hard origin/main
+            git clean -fd -- data/snapshots state
             python3 tools/publish_guestbook.py
-            git add -- data/guestbook.json data/publication-state.json
+            python3 tools/check_storage.py
+            git add -A -- data state
             if git diff --cached --quiet; then exit 0; fi
             git commit -m 'chore: publish validated guestbook snapshot'
             if git push origin HEAD:main; then exit 0; fi

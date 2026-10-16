@@ -10,12 +10,15 @@ from pathlib import Path
 import re
 import sys
 import unicodedata
+import urllib.error
+import urllib.parse
 import urllib.request
 
 UTC = dt.timezone.utc
 KST = dt.timezone(dt.timedelta(hours=9))
 KIND = 'hunt-briefing-guestbook'
-MAX_ISSUES = 5000
+FULL_RECONCILE_DAYS = 7
+SNAPSHOT_LIMIT = 8
 BRIEFING_ROOT = 'https://raw.githubusercontent.com/tyuio7777/hunt-briefing-feed/main/feed/'
 
 def stamp(value):
@@ -206,31 +209,146 @@ def build_snapshot(issues, policy, profiles, state, now, catalog=None):
     receipts.sort(key=lambda e: e['issue_number'], reverse=True)
     return {'schema_version': '1.0', 'generated_at': iso(now), 'entries': entries[:500], 'receipts': receipts[:2000]}, {'schema_version': '1.0', 'history': history}
 
-def api_issues(repository, token):
+def api_get(repository, token, suffix):
     if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', repository):
         raise ValueError('Invalid repository')
-    values = []
-    for page in range(1, MAX_ISSUES // 100 + 2):
-        url = f'https://api.github.com/repos/{repository}/issues?state=all&per_page=100&page={page}&sort=created&direction=asc'
-        request = urllib.request.Request(url, headers={'Authorization': f'Bearer {token}', 'Accept': 'application/vnd.github+json',
-                                                    'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'HuntBriefing-Guestbook-Publisher'})
-        with urllib.request.urlopen(request, timeout=30) as response:
-            raw = response.read(16 * 1024 * 1024 + 1)
-        if len(raw) > 16 * 1024 * 1024:
-            raise ValueError('API response too large')
-        batch = json.loads(raw)
+    url = f'https://api.github.com/repos/{repository}/issues{suffix}'
+    request = urllib.request.Request(url, headers={'Authorization': f'Bearer {token}', 'Accept': 'application/vnd.github+json',
+                                                'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'HuntBriefing-Guestbook-Publisher'})
+    with urllib.request.urlopen(request, timeout=30) as response:
+        raw = response.read(16 * 1024 * 1024 + 1)
+    if len(raw) > 16 * 1024 * 1024:
+        raise ValueError('API response too large')
+    return json.loads(raw)
+
+def api_issues(repository, token, since=None):
+    # The repository issue endpoint has no search API's 1,000-result cap.
+    # Never truncate a successful feed at a fixed repository-wide issue count.
+    values, page = {}, 1
+    while True:
+        query = {'state': 'all', 'per_page': 100, 'page': page, 'sort': 'created', 'direction': 'asc'}
+        if since is not None:
+            query['since'] = iso(since)
+        batch = api_get(repository, token, '?' + urllib.parse.urlencode(query))
         if not isinstance(batch, list):
             raise ValueError('API response is not a list')
-        values.extend(batch)
-        if len(values) > MAX_ISSUES:
-            raise ValueError('Archive Issues before exceeding 5000; existing public data was not changed.')
+        before = len(values)
+        for item in batch:
+            if not isinstance(item, dict) or type(item.get('number')) is not int or item['number'] <= 0:
+                raise ValueError('Invalid API issue')
+            values[item['number']] = item
         if len(batch) < 100:
-            return values
-    raise ValueError('Incomplete pagination; existing public data was not changed.')
+            return list(values.values())
+        if len(values) == before:
+            raise ValueError('Pagination did not advance; public data was not changed')
+        page += 1
+
+def compact_issue(item):
+    """Cache only fields required for validation, no profiles/comments/HTML payloads."""
+    number, uid = item['number'], item['user']['id']
+    if type(number) is not int or number <= 0 or type(uid) is not int or uid <= 0:
+        raise ValueError('Invalid GitHub identity')
+    stamp(item['created_at']); stamp(item['updated_at'])
+    body = item.get('body') or ''
+    if not isinstance(body, str) or len(body.encode('utf-8')) > 8192:
+        try:
+            raw = json.loads(body)
+            nonce = raw.get('submission_id') if isinstance(raw, dict) else None
+            body = json.dumps({'submission_id': nonce}) if isinstance(nonce, str) and re.fullmatch('[0-9a-fA-F]{32}', nonce) else '{}'
+        except (ValueError, TypeError):
+            body = '{}'
+    return {'number': number, 'user': {'id': uid}, 'body': body, 'created_at': item['created_at'],
+            'updated_at': item['updated_at'], 'state': item['state']}
+
+def load_issue_cache(root):
+    result = {}
+    for path in sorted((root / 'state/issues').glob('*.json')):
+        doc = json.loads(path.read_text(encoding='utf-8'))
+        for key, item in doc['issues'].items():
+            if key != str(item['number']) or key in result:
+                raise ValueError('Invalid cached issue identity')
+            result[key] = compact_issue(item)
+    return result
+
+def reconcile_issues(root, repository, token, now, force_full=False):
+    """Read everything before writing. An incomplete API read cannot remove old posts."""
+    sync_path = root / 'state/sync.json'
+    old = json.loads(sync_path.read_text()) if sync_path.exists() else {}
+    cached = load_issue_cache(root)
+    full = (force_full or not old.get('last_full_at') or old.get('issue_count') != len(cached)
+            or now - stamp(old['last_full_at']) >= dt.timedelta(days=FULL_RECONCILE_DAYS))
+    since = None if full else stamp(old['watermark']) - dt.timedelta(minutes=5)
+    downloaded = api_issues(repository, token, since)
+    records = {} if full else dict(cached)
+    for item in downloaded:
+        if 'pull_request' not in item:
+            value = compact_issue(item)
+            if stamp(value['updated_at']) > now + dt.timedelta(minutes=5):
+                raise ValueError('Future API watermark')
+            records[str(value['number'])] = value
+    if full:
+        # Pagination may shift during deletions. Confirm absence individually before removing a cached row.
+        for key in cached.keys() - records.keys():
+            try:
+                item = api_get(repository, token, '/' + key)
+            except urllib.error.HTTPError as error:
+                if error.code not in (404, 410): raise
+                continue
+            if item.get('repository_url', f'https://api.github.com/repos/{repository}') != f'https://api.github.com/repos/{repository}':
+                continue  # transferred out of this repository
+            if 'pull_request' not in item:
+                records[key] = compact_issue(item)
+    watermark = max([stamp(old['watermark']) if old.get('watermark') else now]
+                    + [min(stamp(i['updated_at']), now) for i in downloaded])
+    sync = {'schema_version': '1.0', 'watermark': iso(watermark), 'last_full_at': iso(now) if full else old['last_full_at'],
+            'issue_count': len(records)}
+    return records, sync, full
+
+def save_issue_cache(root, records, sync):
+    buckets = {}
+    for key, value in records.items():
+        bucket = f'{int(key) // 1000:08d}.json'
+        buckets.setdefault(bucket, {})[key] = value
+    folder = root / 'state/issues'
+    for bucket, rows in buckets.items():
+        write_json(folder / bucket, {'schema_version': '1.0', 'issues': dict(sorted(rows.items(), key=lambda x: int(x[0])))})
+    for path in folder.glob('*.json'):
+        if path.name not in buckets: path.unlink()
+    write_json(root / 'state/sync.json', sync)
+
+def publish_version(root, feed):
+    # The content address lets clients detect a change with a tiny anonymous read.
+    text = json.dumps(feed, ensure_ascii=False, indent=2) + '\n'
+    data = text.encode('utf-8')
+    if len(data) > 4 * 1024 * 1024:
+        raise ValueError('Public snapshot exceeds the app limit')
+    revision = hashlib.sha256(data).hexdigest()
+    folder = root / 'data/snapshots'
+    write_json(folder / (revision + '.json'), feed)
+    write_json(root / 'data/guestbook.json', feed)  # v41-v44 remain compatible
+    write_json(root / 'data/guestbook-version.json', {'schema_version': '1.0', 'revision': revision,
+        'size_bytes': len(data), 'generated_at': feed['generated_at']})
+    snapshots = sorted(folder.glob('*.json'),
+        key=lambda p: (stamp(json.loads(p.read_text(encoding='utf-8'))['generated_at']), p.name), reverse=True)
+    previous = [p for p in snapshots if p.name != revision + '.json'][:SNAPSHOT_LIMIT - 1]
+    keep = {revision + '.json'} | {p.name for p in previous}
+    for path in snapshots:
+        if path.name not in keep: path.unlink()
+
+def storage_status(root, records, history):
+    size = sum(p.stat().st_size for folder in ('data', 'state') for p in (root / folder).rglob('*')
+               if p.is_file() and p.name != 'storage-status.json')
+    warnings = []
+    if len(records) >= 20000: warnings.append('Issue cache has at least 20000 records; review publication duration.')
+    if size >= 100 * 1024 * 1024: warnings.append('Generated working files exceed 100 MiB; review storage.')
+    for warning in warnings: print('::warning::' + warning)
+    write_json(root / 'data/storage-status.json', {'schema_version': '1.0', 'cached_issues': len(records),
+        'publication_history': len(history), 'generated_bytes': size, 'warnings': warnings})
 
 def write_json(path, value):
     text = json.dumps(value, ensure_ascii=False, indent=2) + '\n'
     path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists() and path.read_text(encoding='utf-8') == text: return
     temp = path.with_suffix('.tmp')
     temp.write_text(text, encoding='utf-8'); temp.replace(path)
 
@@ -240,16 +358,25 @@ def main():
     profiles = {p['id']: p for p in json.loads((root / 'config/profiles.json').read_text(encoding='utf-8'))['profiles']}
     state_path = root / 'data/publication-state.json'
     state = json.loads(state_path.read_text(encoding='utf-8')) if state_path.exists() else {'history': {}}
-    issues = api_issues(os.environ['GITHUB_REPOSITORY'], os.environ['GH_TOKEN'])
+    now = dt.datetime.now(UTC)
+    event = {}
+    if os.environ.get('GITHUB_EVENT_PATH'):
+        event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text(encoding='utf-8'))
+    records, sync, full = reconcile_issues(root, os.environ['GITHUB_REPOSITORY'], os.environ['GH_TOKEN'], now,
+        force_full=event.get('action') in ('deleted', 'transferred') or os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch')
+    issues = list(records.values())
     # A network failure aborts before writing: never reject good attachments because a feed is temporarily unavailable.
     catalog = load_briefing_catalog() if needs_briefing_catalog(issues) else {}
-    feed, new_state = build_snapshot(issues, policy, profiles, state, dt.datetime.now(UTC), catalog)
+    feed, new_state = build_snapshot(issues, policy, profiles, state, now, catalog)
     target = root / 'data/guestbook.json'
     old = json.loads(target.read_text(encoding='utf-8')) if target.exists() else {}
     if old.get('entries') == feed['entries'] and old.get('receipts') == feed['receipts']:
         feed['generated_at'] = old.get('generated_at', feed['generated_at'])
-    write_json(target, feed); write_json(state_path, new_state)
-    print(f"Published {len(feed['entries'])} guestbook entries")
+    publish_version(root, feed)
+    write_json(state_path, new_state)
+    save_issue_cache(root, records, sync)
+    storage_status(root, records, new_state['history'])
+    print(f"Published {len(feed['entries'])} guestbook entries; mode={'full' if full else 'incremental'}; cached={len(records)}")
 
 if __name__ == '__main__':
     main()
