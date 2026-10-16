@@ -16,6 +16,7 @@ UTC = dt.timezone.utc
 KST = dt.timezone(dt.timedelta(hours=9))
 KIND = 'hunt-briefing-guestbook'
 MAX_ISSUES = 5000
+BRIEFING_ROOT = 'https://raw.githubusercontent.com/tyuio7777/hunt-briefing-feed/main/feed/'
 
 def stamp(value):
     if not isinstance(value, str):
@@ -49,15 +50,80 @@ def clean(value, minimum, maximum, multiline=False):
         raise ValueError('표시할 수 없는 문자를 제거해 주세요.')
     return value
 
+def valid_briefing_id(value):
+    return isinstance(value, str) and len(value) <= 100 and re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]*', value) is not None
+
+def canonical_reference(issue):
+    if not isinstance(issue, dict) or not valid_briefing_id(issue.get('id')):
+        raise ValueError('Invalid operator briefing id')
+    url = issue.get('html_url')
+    if (not isinstance(url, str) or len(url) > 500 or not url.startswith(BRIEFING_ROOT) or
+            not re.fullmatch(r'(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_-]+\.html', url[len(BRIEFING_ROOT):])):
+        raise ValueError('Invalid operator briefing URL')
+    return {'issue_id': issue['id'], 'title': clean(issue.get('title'), 1, 300),
+            'html_url': url, 'published_at': iso(stamp(issue['published_at']))}
+
+def build_briefing_catalog(index, latest):
+    if not isinstance(index, dict) or not isinstance(index.get('issues'), list) or not isinstance(latest, dict):
+        raise ValueError('Invalid operator briefing catalog')
+    catalog = {}
+    for issue in index['issues'] + ([latest['issue']] if latest.get('issue') else []):
+        reference = canonical_reference(issue)
+        catalog[reference['issue_id']] = reference
+    return catalog
+
+def load_briefing_catalog():
+    documents = []
+    for filename in ('index.json', 'latest.json'):
+        request = urllib.request.Request(BRIEFING_ROOT + filename, headers={
+            'Accept': 'application/json', 'Cache-Control': 'no-cache', 'User-Agent': 'HuntBriefing-Guestbook-Publisher'})
+        with urllib.request.urlopen(request, timeout=30) as response:
+            raw = response.read(4 * 1024 * 1024 + 1)
+        if len(raw) > 4 * 1024 * 1024:
+            raise ValueError('Operator briefing catalog too large')
+        documents.append(json.loads(raw))
+    return build_briefing_catalog(*documents)
+
+def needs_briefing_catalog(issues):
+    for issue in issues:
+        try:
+            data = json.loads(issue.get('body') or '')
+            if isinstance(data, dict) and valid_briefing_id(data.get('briefing_id')):
+                return True
+        except (ValueError, TypeError):
+            pass
+    return False
+
+def resolve_reference(data, previous, catalog):
+    old = (previous or {}).get('briefing_reference')
+    # Missing in v41 means preserve; explicit null in v42 means detach.
+    if 'briefing_id' not in data:
+        reference = old
+    elif data['briefing_id'] is None:
+        return None
+    else:
+        reference = catalog.get(data['briefing_id'])
+        if reference is None and old and old.get('issue_id') == data['briefing_id']:
+            reference = old  # Keep historical references when the index is archived.
+        if reference is None:
+            raise ValueError('참조한 브리핑을 확인하지 못했습니다. 최신 목록에서 다시 선택해 주세요.')
+    if reference is None:
+        return None
+    # Validate even persisted operator history before publishing it again.
+    return canonical_reference({**reference, 'id': reference['issue_id']})
+
 def parse_submission(issue, profiles, admins):
     body = issue.get('body') or ''
     if not isinstance(body, str) or len(body.encode('utf-8')) > 8192:
         raise ValueError('방명록 형식을 확인해 주세요.')
     data = json.loads(body)
-    if not isinstance(data, dict) or set(data) != {'schema_version', 'kind', 'submission_id', 'nickname', 'profile_id', 'body'}:
+    required = {'schema_version', 'kind', 'submission_id', 'nickname', 'profile_id', 'body'}
+    if not isinstance(data, dict) or not required <= set(data) or set(data) - required - {'briefing_id'}:
         raise ValueError('방명록 형식을 확인해 주세요.')
     if data['schema_version'] != '1.0' or data['kind'] != KIND or not isinstance(data['submission_id'], str) or not re.fullmatch('[0-9a-fA-F]{32}', data['submission_id']):
         raise ValueError('방명록 등록 정보를 확인해 주세요.')
+    if data.get('briefing_id') is not None and not valid_briefing_id(data['briefing_id']):
+        raise ValueError('참조한 브리핑 정보를 확인해 주세요.')
     uid = issue['user']['id']  # NEVER trust an author id supplied in the Issue body.
     author_code(uid)
     profile = data['profile_id']
@@ -66,8 +132,9 @@ def parse_submission(issue, profiles, admins):
     return {**data, 'submission_id': data['submission_id'].lower(),
             'nickname': clean(data['nickname'], 2, 16), 'body': clean(data['body'], 2, 500, True)}
 
-def build_snapshot(issues, policy, profiles, state, now):
+def build_snapshot(issues, policy, profiles, state, now, catalog=None):
     """Whole-repository reconciliation tolerates coalesced/cancelled pending workflow runs."""
+    catalog = catalog or {}
     admins = set(policy['administrator_ids'])
     hidden = set(policy.get('hidden_issue_numbers', []))
     blocked = set(policy.get('blocked_author_ids', []))
@@ -99,6 +166,7 @@ def build_snapshot(issues, policy, profiles, state, now):
             # A submission id is immutable once first accepted; changing it cannot manufacture a new quest event.
             if previous and (previous['author_id'] != uid or previous['submission_id'] != data['submission_id']):
                 raise ValueError('기존 글의 등록 정보는 변경할 수 없습니다.')
+            reference = resolve_reference(data, previous, catalog)
             day_key = (uid, created.astimezone(KST).date().isoformat())
             body_key = (day_key, hashlib.sha256(' '.join(data['body'].split()).casefold().encode()).hexdigest())
             if not previous and days.get(day_key, 0) >= daily_limit:
@@ -108,6 +176,8 @@ def build_snapshot(issues, policy, profiles, state, now):
             # Accepted posts keep their first publication time through edits, closures and moderation.
             if not previous:
                 previous = {'author_id': uid, 'submission_id': data['submission_id'], 'first_published_at': iso(now), 'created_at': iso(created)}
+            previous = dict(previous)
+            previous['briefing_reference'] = reference
             if uid in blocked or number in hidden:
                 receipt.update(status='hidden', reason='운영 기준에 따라 숨김 처리된 글입니다.')
             elif issue.get('state') != 'open':
@@ -117,7 +187,7 @@ def build_snapshot(issues, policy, profiles, state, now):
                 entries.append({'issue_number': number, 'author_id': uid, 'author_code': author_code(uid),
                                 'nickname': data['nickname'], 'profile_id': data['profile_id'], 'body': data['body'],
                                 'submission_id': data['submission_id'], 'created_at': iso(created), 'updated_at': iso(updated),
-                                'first_published_at': previous['first_published_at']})
+                                'first_published_at': previous['first_published_at'], 'briefing_reference': reference})
                 receipt.update(status='published', reason='')
             days[day_key] = days.get(day_key, 0) + 1
             bodies.add(body_key)
@@ -171,7 +241,9 @@ def main():
     state_path = root / 'data/publication-state.json'
     state = json.loads(state_path.read_text(encoding='utf-8')) if state_path.exists() else {'history': {}}
     issues = api_issues(os.environ['GITHUB_REPOSITORY'], os.environ['GH_TOKEN'])
-    feed, new_state = build_snapshot(issues, policy, profiles, state, dt.datetime.now(UTC))
+    # A network failure aborts before writing: never reject good attachments because a feed is temporarily unavailable.
+    catalog = load_briefing_catalog() if needs_briefing_catalog(issues) else {}
+    feed, new_state = build_snapshot(issues, policy, profiles, state, dt.datetime.now(UTC), catalog)
     target = root / 'data/guestbook.json'
     old = json.loads(target.read_text(encoding='utf-8')) if target.exists() else {}
     if old.get('entries') == feed['entries'] and old.get('receipts') == feed['receipts']:
