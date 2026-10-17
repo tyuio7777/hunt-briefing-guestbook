@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-10-17T18:53:38Z",
+  "threads": [
+    {
+      "issue_number": 2,
+      "count": 0,
+      "writable": true,
+      "revision": "14ece293ff2967408290a48b3191677bd651c4c39f8994e83a54dd40871b7eea",
+      "size_bytes": 98
+    },
+    {
+      "issue_number": 1,
+      "count": 2,
+      "writable": true,
+      "revision": "91f02de58f9eec25379bd9a4005f6ef4c2582bdef2b200a980a32929ecfc40dd",
+      "size_bytes": 357
+    }
+  ]
+}
