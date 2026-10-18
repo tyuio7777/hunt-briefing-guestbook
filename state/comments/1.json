@@ -8,11 +8,11 @@
         "type": "User"
       },
       "node_id": "IC_kwDOVLzLjM8AAAABc8KbDg",
-      "body_edited_at": null,
       "body": "{\"schema_version\":\"1.0\",\"kind\":\"hunt-briefing-comment\",\"submission_id\":\"e4eb04e79e7f4e85b7b36d8233900299\",\"nickname\":\"CROISSANT\",\"profile_id\":\"croissant\",\"body\":\"\\uC624\\uC624 \\uC704\\uB300\\uD558\\uC2E0 \\uB4DC\\uB86D\\uC2A4\\uB2D8\\uC774\\uC2DC\\uC5EC!\"}",
       "created_at": "2026-10-17T16:56:10Z",
       "updated_at": "2026-10-17T16:56:10Z",
-      "issue_url": "https://api.github.com/repos/tyuio7777/hunt-briefing-guestbook/issues/1"
+      "issue_url": "https://api.github.com/repos/tyuio7777/hunt-briefing-guestbook/issues/1",
+      "body_edited_at": null
     },
     {
       "id": 6238977807,
@@ -25,6 +25,20 @@
       "body": "{\"schema_version\":\"1.0\",\"kind\":\"hunt-briefing-comment\",\"submission_id\":\"7fef1c1b6e764c05baff75c3cedc9388\",\"nickname\":\"CROISSANT\",\"profile_id\":\"croissant\",\"body\":\"\\uCC2C\\uC591\\uCC2C\\uC591\\uD589\"}",
       "created_at": "2026-10-17T18:53:30Z",
       "updated_at": "2026-10-17T18:53:30Z",
+      "issue_url": "https://api.github.com/repos/tyuio7777/hunt-briefing-guestbook/issues/1",
+      "body_edited_at": null
+    },
+    {
+      "id": 6249621854,
+      "issue_number": 1,
+      "user": {
+        "id": 20161415,
+        "type": "User"
+      },
+      "node_id": "IC_kwDOVLzLjM8AAAABdIGpXg",
+      "body": "{\"schema_version\":\"1.0\",\"kind\":\"hunt-briefing-comment\",\"submission_id\":\"a00361fa6deb4e96a995a06b762f64a5\",\"nickname\":\"CROISSANT\",\"profile_id\":\"croissant\",\"body\":\"\\uCC2C\\uC591 \\uCC2C\\uC591 \\uCC2C\\u3161\\uC591\"}",
+      "created_at": "2026-10-18T11:56:29Z",
+      "updated_at": "2026-10-18T11:56:29Z",
       "issue_url": "https://api.github.com/repos/tyuio7777/hunt-briefing-guestbook/issues/1",
       "body_edited_at": null
     }
