@@ -15,20 +15,6 @@
       "body_edited_at": null
     },
     {
-      "id": 6238977807,
-      "issue_number": 1,
-      "user": {
-        "id": 20161415,
-        "type": "User"
-      },
-      "node_id": "IC_kwDOVLzLjM8AAAABc98_Dw",
-      "body": "{\"schema_version\":\"1.0\",\"kind\":\"hunt-briefing-comment\",\"submission_id\":\"7fef1c1b6e764c05baff75c3cedc9388\",\"nickname\":\"CROISSANT\",\"profile_id\":\"croissant\",\"body\":\"\\uCC2C\\uC591\\uCC2C\\uC591\\uD589\"}",
-      "created_at": "2026-10-17T18:53:30Z",
-      "updated_at": "2026-10-17T18:53:30Z",
-      "issue_url": "https://api.github.com/repos/tyuio7777/hunt-briefing-guestbook/issues/1",
-      "body_edited_at": null
-    },
-    {
       "id": 6249621854,
       "issue_number": 1,
       "user": {

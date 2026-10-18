@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "issue_number": 1,
+  "count": 2,
+  "pages": [
+    {
+      "revision": "10d818069f8a1bde5dce595da75b69724996ad979eabfe93b1f792baf6786e95",
+      "size_bytes": 1086,
+      "count": 2,
+      "first_id": 6237100814,
+      "last_id": 6249621854,
+      "min_id": 6237100814,
+      "max_id": 6249621854
+    }
+  ],
+  "receipts": []
+}
