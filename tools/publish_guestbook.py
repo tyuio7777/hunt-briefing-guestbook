@@ -2,6 +2,8 @@
 """Read GitHub Issues as untrusted data, publish a validated read-only JSON snapshot.
 No external packages, eval, shell interpolation, user-selected file paths or network destinations.
 """
+from concurrent.futures import ThreadPoolExecutor
+from time import perf_counter
 import datetime as dt
 import hashlib
 import json
@@ -76,26 +78,52 @@ def build_briefing_catalog(index, latest):
     return catalog
 
 def load_briefing_catalog():
-    documents = []
-    for filename in ('index.json', 'latest.json'):
+    def read(filename):
         request = urllib.request.Request(BRIEFING_ROOT + filename, headers={
             'Accept': 'application/json', 'Cache-Control': 'no-cache', 'User-Agent': 'HuntBriefing-Guestbook-Publisher'})
         with urllib.request.urlopen(request, timeout=30) as response:
             raw = response.read(4 * 1024 * 1024 + 1)
         if len(raw) > 4 * 1024 * 1024:
             raise ValueError('Operator briefing catalog too large')
-        documents.append(json.loads(raw))
+        return json.loads(raw)
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        documents = list(pool.map(read, ('index.json', 'latest.json')))
     return build_briefing_catalog(*documents)
 
-def needs_briefing_catalog(issues):
+def needs_briefing_catalog(issues, state=None):
+    history = (state or {}).get('history', {})
     for issue in issues:
         try:
             data = json.loads(issue.get('body') or '')
-            if isinstance(data, dict) and valid_briefing_id(data.get('briefing_id')):
-                return True
         except (ValueError, TypeError):
-            pass
+            continue
+        if not isinstance(data, dict) or not valid_briefing_id(data.get('briefing_id')):
+            continue
+        previous = history.get(str(issue.get('number')), {}).get('briefing_reference')
+        if previous and previous.get('issue_id') == data['briefing_id']:
+            try:
+                # Reuse only canonical operator history; full checks still run in build_snapshot.
+                canonical_reference({'id': previous['issue_id'], 'title': previous['title'],
+                    'html_url': previous['html_url'], 'published_at': previous['published_at']})
+                continue
+            except (ValueError, TypeError, KeyError):
+                return True
+        return True
     return False
+
+def collect_related(root, records, cached_before, repository, token, now, full, event, state, refresh_catalog):
+    issues = list(records.values())
+    catalog_needed = needs_briefing_catalog(issues, None if refresh_catalog else state)
+    # Independent read-only queries complete before any snapshot/state file is written.
+    import guestbook_comments as comments
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        edits = pool.submit(comments.enrich_edits, records, cached_before, token)
+        thread = pool.submit(comments.reconcile, root, repository, token, now, full, event)
+        catalog = pool.submit(load_briefing_catalog) if catalog_needed else None
+        edits.result()
+        rows, sync = thread.result()
+        references = catalog.result() if catalog is not None else {}
+    return rows, sync, references
 
 def resolve_reference(data, previous, catalog):
     old = (previous or {}).get('briefing_reference')
@@ -358,6 +386,7 @@ def write_json(path, value):
     temp.write_text(text, encoding='utf-8'); temp.replace(path)
 
 def main():
+    started = perf_counter()
     root = Path(__file__).resolve().parents[1]
     policy = json.loads((root / 'config/moderation.json').read_text(encoding='utf-8'))
     profiles = {p['id']: p for p in json.loads((root / 'config/profiles.json').read_text(encoding='utf-8'))['profiles']}
@@ -372,11 +401,12 @@ def main():
     migration = any('node_id' not in x for x in cached_before.values())
     records, sync, full = reconcile_issues(root, os.environ['GITHUB_REPOSITORY'], os.environ['GH_TOKEN'], now,
         force_full=migration or (event.get('action') in ('deleted', 'transferred') and not event.get('comment')) or os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch')
-    comments.enrich_edits(records, cached_before, os.environ['GH_TOKEN'])
-    comment_rows, comment_sync = comments.reconcile(root, os.environ['GITHUB_REPOSITORY'], os.environ['GH_TOKEN'], now, full, event)
+    synced = perf_counter()
+    comment_rows, comment_sync, catalog = collect_related(root, records, cached_before,
+        os.environ['GITHUB_REPOSITORY'], os.environ['GH_TOKEN'], now, full, event, state,
+        refresh_catalog=full or os.environ.get('GITHUB_EVENT_NAME') in ('schedule', 'workflow_dispatch'))
+    fetched = perf_counter()
     issues = list(records.values())
-    # A network failure aborts before writing: never reject good attachments because a feed is temporarily unavailable.
-    catalog = load_briefing_catalog() if needs_briefing_catalog(issues) else {}
     feed, new_state = build_snapshot(issues, policy, profiles, state, now, catalog)
     target = root / 'data/guestbook.json'
     old = json.loads(target.read_text(encoding='utf-8')) if target.exists() else {}
@@ -388,6 +418,7 @@ def main():
     write_json(state_path, new_state)
     save_issue_cache(root, records, sync)
     storage_status(root, records, new_state['history'])
+    print(f"Timing seconds: issue_sync={synced-started:.3f} related_reads={fetched-synced:.3f} build_write={perf_counter()-fetched:.3f} total={perf_counter()-started:.3f}")
     print(f"Published {len(feed['entries'])} guestbook entries; mode={'full' if full else 'incremental'}; cached={len(records)}")
 
 if __name__ == '__main__':

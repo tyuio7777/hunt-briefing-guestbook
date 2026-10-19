@@ -42,9 +42,12 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           for attempt in 1 2 3; do
-            git fetch origin main
-            git reset --hard origin/main
-            git clean -fd -- data/snapshots data/comments state
+            # checkout already fetched main. Refresh only after a conflicting push.
+            if [ "$attempt" -gt 1 ]; then
+              git fetch origin main
+              git reset --hard origin/main
+              git clean -fd -- data/snapshots data/comments state
+            fi
             python3 tools/publish_guestbook.py
             python3 tools/check_storage.py
             git add -A -- data state

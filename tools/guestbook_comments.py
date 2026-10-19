@@ -166,7 +166,7 @@ def build(feed,records,issues,policy,profiles,now):
             pages.append({**blob({'schema_version':'1.0','issue_number':number,'comments':part}),
                           'count':len(part),'first_id':part[0]['comment_id'],'last_id':part[-1]['comment_id'],'min_id':min(x['comment_id'] for x in part),'max_id':max(x['comment_id'] for x in part)})
         thread={'schema_version':'1.0','issue_number':number,'count':len(values),'pages':pages,'receipts':receipts[-200:]}
-        heads.append({'issue_number':number,'count':len(values),'writable':not issues[str(number)].get('locked',False),**blob(thread)})
+        heads.append({'issue_number':number,'count':len(values),'latest_comment_id':max((x['comment_id'] for x in values),default=0),'writable':not issues[str(number)].get('locked',False),**blob(thread)})
     return {'schema_version':'1.0','generated_at':p.iso(now),'threads':heads},blobs
 
 def save(root,rows,sync,index,blobs):
