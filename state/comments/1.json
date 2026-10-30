@@ -8,11 +8,11 @@
         "type": "User"
       },
       "node_id": "IC_kwDOVLzLjM8AAAABc8KbDg",
-      "body_edited_at": null,
       "body": "{\"schema_version\":\"1.0\",\"kind\":\"hunt-briefing-comment\",\"submission_id\":\"e4eb04e79e7f4e85b7b36d8233900299\",\"nickname\":\"CROISSANT\",\"profile_id\":\"croissant\",\"body\":\"\\uC624\\uC624 \\uC704\\uB300\\uD558\\uC2E0 \\uB4DC\\uB86D\\uC2A4\\uB2D8\\uC774\\uC2DC\\uC5EC!\"}",
       "created_at": "2026-10-17T16:56:10Z",
       "updated_at": "2026-10-17T16:56:10Z",
-      "issue_url": "https://api.github.com/repos/tyuio7777/hunt-briefing-guestbook/issues/1"
+      "issue_url": "https://api.github.com/repos/tyuio7777/hunt-briefing-guestbook/issues/1",
+      "body_edited_at": null
     },
     {
       "id": 6249621854,
