@@ -1,0 +1,23 @@
+name: Expire shared schedule issue bodies
+on:
+  schedule:
+    - cron: '28 19 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: shared-schedule-inbox-retention
+  cancel-in-progress: false
+jobs:
+  expire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Remove expired encrypted bodies
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node tools/expire_schedule_issues.mjs
