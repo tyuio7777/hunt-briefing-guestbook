@@ -45,13 +45,13 @@
       "user": {
         "id": 20161415
       },
-      "body": "{\"kind\":\"hunt-shared-schedule-v1\",\"channelKey\":\"66ab605406e3cdab11f1297cfb1955b976e1d6948bf06c5f4e864544f1e4aa4c\",\"operationId\":\"f98b4eda9ff94b588b01fb00cb97b36e\",\"item\":{\"id\":\"e6eed94247754e6ea91223a25db8690a\",\"version\":2,\"createdAt\":\"2026-11-18T17:02:42.7798852+00:00\",\"expiresAt\":\"2027-05-19T02:02:42.7798852+09:00\",\"deleted\":false,\"nonce\":\"RtR\\u002BLBdykFyW9opr\",\"ciphertext\":\"0T/r/Rpef3B8kPGTV58w2D2PYmqjkSSEsNs2BxAfaI8OshMV8bB84aJRm78T/Giocw3Ed\\u002BtAztALrWJlYAhEMNOHwfb0tTC0v88\\u002B6J\\u002Bfo8GSE/H3MlPqDtcFuebQKmDYUAb8Xfc34kTGW/Xs\\u002B/Ry34IDveTwKIFinwCyHprxT/jN6fqoUAQFRe\\u002B8LLwA4ZVwcljr9I5gGbdQ89j50ySRXvBHYO9uGLVi3gUc2QBb/kRHVSkcPzpfv\\u002Bc/QbQbz3a8C45tIqnokPAx9X5NBioV/zhWc5UmWSbd49Y0PgM4c6kg3R1NflEOFXn2ygBFLN4/5acfuLQXorGzBJEhChExA0ojILHadga5\",\"tag\":\"sl5EF4RKYcWB3ngWFPwI6Q==\"}}",
+      "body": "{\"kind\":\"hunt-shared-schedule-v1\",\"channelKey\":\"66ab605406e3cdab11f1297cfb1955b976e1d6948bf06c5f4e864544f1e4aa4c\",\"operationId\":\"1c7c558a678a41a89b6d44f25385d204\",\"item\":{\"id\":\"e6eed94247754e6ea91223a25db8690a\",\"version\":3,\"createdAt\":\"2026-11-18T17:02:42.7798852+00:00\",\"expiresAt\":\"2027-05-19T02:02:42.7798852+09:00\",\"deleted\":true,\"nonce\":\"\",\"ciphertext\":\"\",\"tag\":\"\"}}",
       "created_at": "2026-11-18T17:02:44Z",
-      "updated_at": "2026-11-18T17:04:34Z",
-      "state": "open",
+      "updated_at": "2026-11-18T17:29:15Z",
+      "state": "closed",
       "locked": false,
       "node_id": "I_kwDOVLzLjM8AAAABgcnEDQ",
-      "body_edited_at": "2026-11-18T17:04:34Z"
+      "body_edited_at": "2026-11-18T17:29:15Z"
     }
   }
 }
