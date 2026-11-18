@@ -52,6 +52,19 @@
       "locked": false,
       "node_id": "I_kwDOVLzLjM8AAAABgcnEDQ",
       "body_edited_at": "2026-11-18T17:29:15Z"
+    },
+    "5": {
+      "number": 5,
+      "user": {
+        "id": 20161415
+      },
+      "body": "{\"kind\":\"hunt-shared-schedule-v1\",\"channelKey\":\"de6bcf0d4f0392d17eaa97e104daaec2ece6e39d3d77083b3a8a6dc9228ad24e\",\"operationId\":\"7d758614c1e84b1eb554b8fbb5aa5ecd\",\"item\":{\"id\":\"85c7c19321ee4539b691883fcc966a3f\",\"version\":1,\"createdAt\":\"2026-11-18T17:54:54.28841+00:00\",\"expiresAt\":\"2027-05-19T02:54:54.28841+09:00\",\"deleted\":false,\"nonce\":\"unAp0tMj1B9VYGON\",\"ciphertext\":\"U7cZnsE78n9bfN\\u002B0JTSvf1\\u002BgxKhN0OPbyp\\u002B0c85xE75rJhQlB2U8T2p5p/X9J6Da13ZXDGYgr4RGe3ZVE5HyErJO\\u002BA9gYNUY6TnqHD9oWdfwhnQb\\u002BETNiaxKl01ehdMqLEcMGjld8BgH7fOaQMO\\u002BN27Bfilev\\u002BWf9mKlcQ8o4lY3NFDJ9NPsY8XSwMAsBqeQqSEyi1LnxcsrEzPmAYGcIziqxIFj/eSEobyn5H/FJxT82QkPjPjJ29TRu5viPzVxHvO57SC9/N89mKqy2NjKlJvRNXlS1ZVPDsGqOLsZpws87MxSfRI6AfB\\u002BYO\\u002B5rlPkSzUJNMQo9MVGxXO\\u002BwvunMjNGuSvDoo5lexjYWm8JJOnRAZ0YWGaIzZWXc9hV60xubk6h/EExG4i7kN3uCXAVoPMcx\\u002B0fb3H95cEpHr\\u002BCvX73OoaCeJru2L1ELKmGv9HQk4\\u002Blpg==\",\"tag\":\"Csg1fa4vAxW1VpguSkIUWA==\"}}",
+      "created_at": "2026-11-18T17:54:56Z",
+      "updated_at": "2026-11-18T17:54:56Z",
+      "state": "open",
+      "locked": false,
+      "node_id": "I_kwDOVLzLjM8AAAABgdf_3g",
+      "body_edited_at": null
     }
   }
 }
