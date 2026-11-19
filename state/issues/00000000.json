@@ -104,6 +104,19 @@
       "locked": false,
       "node_id": "I_kwDOVLzLjM8AAAABgwwAkg",
       "body_edited_at": "2026-11-19T16:48:33Z"
+    },
+    "9": {
+      "number": 9,
+      "user": {
+        "id": 20161415
+      },
+      "body": "{\"kind\":\"hunt-shared-schedule-v1\",\"channelKey\":\"0239f83e030cd359041a006aadeca1f4572148442e90610ecbc7143e8b7bf6e7\",\"operationId\":\"4b1bf5fa057e452583b7639d1aa9da0c\",\"item\":{\"id\":\"f3e421285ef74e3987f92670f3874cc9\",\"version\":1,\"createdAt\":\"2026-11-19T16:50:00.6471903+00:00\",\"expiresAt\":\"2027-05-20T01:50:00.6471903+09:00\",\"deleted\":false,\"nonce\":\"43kXetA9XYKho3AR\",\"ciphertext\":\"JcDVAGgP8hkd3MPPshMoTdHtjmz5lsM/m2k8dUxBuqE7AnC1zk6TGjqnw/OQHL36pIIO9IPtRLDYirI7fDWbkZI\\u002BWyvTSXSiqYiEU/Vp1ii5OFi0Yf6K9jYXgBMw2cdjXOMr308XnH714H0hf4WeWiyN9mBKqAcme47qQvjzq8lynyo6skVDMWv3DpahYlQqv2v7BKk9vvrHF6xr4pTz4/rZGBACIRBJjq/agFoHzYR7zDC28wjyUOkKtcgUhdBOCSNfh1xqXIornac74My7LJ6f9/TlEeiR2v340Qq2dGMf4zAxFRXHpYmevyoTXACGkKrih8CfGOcK6hqN9AlY/vNw\\u002BSu\\u002BrO5yLbd9PZdw9BmwwF3btErBtSd6OCx8HR07mMNR9A==\",\"tag\":\"vAazundewPmLU5lLstZr0A==\"}}",
+      "created_at": "2026-11-19T16:50:02Z",
+      "updated_at": "2026-11-19T16:50:02Z",
+      "state": "open",
+      "locked": false,
+      "node_id": "I_kwDOVLzLjM8AAAABgxwXWw",
+      "body_edited_at": null
     }
   }
 }
