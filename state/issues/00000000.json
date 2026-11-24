@@ -130,6 +130,19 @@
       "locked": false,
       "node_id": "I_kwDOVLzLjM8AAAABhv_cvw",
       "body_edited_at": "2026-11-24T09:53:26Z"
+    },
+    "11": {
+      "number": 11,
+      "user": {
+        "id": 20161415
+      },
+      "body": "{\"kind\":\"hunt-shared-schedule-v1\",\"channelKey\":\"b11dce3a3bf031fd6440493e5efa4a7e5741645bd16f315efa36bb02e24c9869\",\"operationId\":\"575f0b8544284a82895a8829eaf78d5a\",\"item\":{\"id\":\"696a6e18c0ba4b049e642f19d48fc27d\",\"version\":1,\"createdAt\":\"2026-11-24T10:09:40.2039103+00:00\",\"expiresAt\":\"2027-05-24T19:09:40.2039103+09:00\",\"deleted\":false,\"nonce\":\"7w6HvKdKRyvuL3rr\",\"ciphertext\":\"EGqVe0orB3hIJqk5CqgZUgjgXcbsuWuJzQnFF6SboJM7hfCFourM2r0CkbuvZWmovOh1LSf0w6mysUc/gfjfyZZ48IfTEwVX5\\u002BVi0\\u002BbQ/H/2PxJbLB7e8xyuWAE9qdpj/cnqQ1rtPPJal1hYRpodjo7SCAzaNHMIDgD3ZN4j/Uen9\\u002B57eft8SClHB4QVn\\u002B85sHJEJflMYMKN3pIgHR1ZAT91l8Emwc\\u002BSKYY/oESUx6q1pHuYTCVHse2ryMKUMcH\\u002BNuTvGVBxifGs8V2mVw\\u002Be6bysvA7mitdjzzAMwsT\\u002BqSa6Qz8/pNEujldBjlBL/jN6\\u002B2cWPnY6bx1Qw\\u002BTMuTNnbhPIVh9HM985sDZXlJZm5mEobJrbzX3UAktEHL4vMq0KWRUY5Q==\",\"tag\":\"RZxINrizcpWM3iORphV0\\u002Bg==\"},\"masterBox\":\"CQ9H9Y4rJVi57suW4IbQoh9SCh5b6YhrL7jSQevyjuiuBJIBSfzQ5I0Us8VejoRuQtgbkilCr\\u002BXXjNiSImnq4ywvp0zR5f\\u002B8pqGtDmXaBvMIMHnjRqFvz7kd4fPA6NbRJkmdJUGkYDghx811uuEGRU7kbswWMTFs/AoJowkSEC73HINN2J2Ehvnkumb2Y2s3XoyNGpp\\u002BcczYhUL9Qa4ZErh2xA2LBhgUWKdlBlmJXfOuLKs8XGkbZi2ASZyv2x6o4aVbihBykRU5A9LSum5YzP9/MW6L2A0oIB2qsqU8lELscPk6s2kaCZs8DpqgmG\\u002Bgquk2HVD/g1uq/ilKCTXZgIOhU0/L0VhTAh1XOi5OrxghgvLf1y/gai4PzriVc1Iy6Bj8f1uUEGhUS/zQc67kIv76jhmRwKWIAkFqtVD9vHtLyCAdWzp8qbxx8wOUNisbOd8hwkZcTjVCLC6qWaymS6xvpPRF/sxjSbbKDOL8xUJHkeLDVND1zENHoX2D1r28\"}",
+      "created_at": "2026-11-24T10:09:42Z",
+      "updated_at": "2026-11-24T10:09:42Z",
+      "state": "open",
+      "locked": false,
+      "node_id": "I_kwDOVLzLjM8AAAABiCnwXA",
+      "body_edited_at": null
     }
   }
 }
